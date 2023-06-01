@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!--设置网页标题-->
+    <title>系统时间校准程序</title>
+    <!--引入JavaScript客户端脚本-->
+    <script src="index.js" type="text/javascript" charset="utf-8"></script>
+    <!--引入CSS样式-->
+    <link rel="stylesheet" href="index.css" type="text/css" media="all"/>
+</head>
+<body>
+    <div id="document">
+        <div id="center">
+            时间设置
+        </div>
+        <div>
+            目标时间：<input id="datetime" style="width: 70%;margin-bottom: 5px;" 
+            onkeydown="examine(['type', 'length'], {type: 'string', length: 23}, this)"
+            oninput="examine(['type', 'length'], {type: 'string', length: 23}, this)">
+        </div>
+        <div>
+            系统时间：<input id="systemdate" style="width: 70%;margin-bottom: 5px;" readonly>
+        </div>
+        <div>
+            目标时间戳：<input id="datetimestamp" style="width: 70%;margin-bottom: 5px;"
+            onkeydown="examine(['type', 'length'], {type: 'number',rule: 'float', length: 14, rule: 'integer'}, this)"
+            oninput="examine(['type', 'length'], {type: 'number',rule: 'float', length: 14, rule: 'integer'}, this)">
+        </div>
+        <div>
+            系统时间戳：<input id="systemtimestamp" style="width: 70%;margin-bottom: 5px;" readonly>
+        </div>
+        <div id="center">
+            时间校准
+        </div>
+        <div>
+            理论秒差：<input id="theoreticseconddifference" style="width: 70%;margin-bottom: 5px;" readonly>
+        </div>
+        <div>
+            理论时差：<input id="theoretictimedifference" style="width: 70%;margin-bottom: 5px;" readonly>
+        </div>
+        <button id="calibrate" class="calibrate">校准</button>
+        <div>
+            原偏移量(秒)：<input id="rawoffest" style="width: 70%;margin-bottom: 5px;margin-top: 5px;" readonly>
+        </div>
+        <div>
+            现偏移量(秒)：<input id="nowoffest" style="width: 70%;margin-bottom: 5px;margin-top: 5px;" readonly>
+        </div>
+        <div>
+            秒偏移量(秒)：<input id="secondoffest" style="width: 70%;margin-bottom: 5px;margin-top: 5px;" readonly placeholder="请点击校准按钮">
+        </div>
+        
+        <div id="center">
+            若不计偏移量
+        </div>
+        <div>
+            系统时间：<input id="systemdatenooffest" style="width: 70%;margin-bottom: 5px;" readonly>
+        </div>
+        <div>
+            系统时间戳：<input id="systemtimestampnooffest" style="width: 70%;margin-bottom: 5px;" readonly>
+        </div>
+        <div>
+            一般人类的反应速度为±600ms，点击<a href="reactiontest.html">此处</a>测试您的反应速度。
+        </div>
+        <button id="reload" class="calibrate">重载页面</button>
+        <script>
+            TimeOffest = 0;
+            setInterval(() => {
+                document.getElementById("systemdate").value = getTime("preset0001");
+                document.getElementById("systemtimestamp").value = getTimestamp();
+                differencetime = Math.abs(document.getElementById("datetimestamp").value - document.getElementById("systemtimestamp").value)/1000;
+                document.getElementById("theoreticseconddifference").value = differencetime.toFixed(3);
+                document.getElementById("theoretictimedifference").value = getTimeUseSecond("preset0001", differencetime);
+                document.getElementById("systemtimestampnooffest").value = getTimestamp("ms", false);
+                document.getElementById("systemdatenooffest").value = getTime("preset0001", false);
+            });
+            document.getElementById("rawoffest").value = parseFloat(localStorage.getItem("TimeOffestFromCalendar") || 0);
+            document.getElementById("nowoffest").value = TimeOffest.toFixed(3);
+            document.getElementById("datetime").value = getTime("preset0001");
+            document.getElementById("datetimestamp").value = getTimestamp();
+            document.getElementById("datetime").addEventListener("focusout", () => {
+                TimeObject = TimeParse(document.getElementById("datetime").value);
+                document.getElementById("datetime").value = TimeObject.time;
+                document.getElementById("datetimestamp").value = TimeObject.timestamp;
+            });
+            document.getElementById("datetimestamp").addEventListener("focusout", () => {
+                TimeObject = {
+                    "time": getTimeUseTimestamp("preset0001", document.getElementById("datetimestamp").value, "ms"),
+                    "timestamp": document.getElementById("datetimestamp").value
+                };
+                document.getElementById("datetime").value = TimeObject.time;
+                document.getElementById("datetimestamp").value = TimeObject.timestamp;
+            });
+            document.getElementById("calibrate").addEventListener("click", () => {
+                differencesecond = (document.getElementById("datetimestamp").value - document.getElementById("systemtimestamp").value)/1000;
+                document.getElementById("secondoffest").value = differencesecond.toFixed(3);
+                document.getElementById("nowoffest").value = differencesecond.toFixed(3);
+                TimeOffest = differencesecond;
+                localStorage.setItem("TimeOffestFromCalendar", differencesecond);
+            });
+            document.getElementById("reload").addEventListener("click", () => {
+                location.reload();
+            });
+        </script>
+    </div>
+</body>
+</html>

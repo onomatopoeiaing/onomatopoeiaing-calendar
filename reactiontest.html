@@ -1,0 +1,100 @@
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!--设置网页标题-->
+    <title>反应速度测试</title>
+    <!--引入JavaScript客户端脚本-->
+    <script src="index.js" type="text/javascript" charset="utf-8"></script>
+    <!--引入CSS样式-->
+    <link rel="stylesheet" href="index.css" type="text/css" media="all"/>
+</head>
+<body>
+    <div id="document">
+        <div>
+            介绍：反应速度测试是取多次测试的平均反应速度，为了预防点击预判等蒙对情况，所以故此添加为七次测试取平均值。点击开始测试按钮之后，下面的元素将会在十秒之内做出一次变色反应，请您尽快做出反应，以确保此测试的精确度。
+        </div>
+        <button id="start" style="width: 100%;">Start</button>
+        <div id="subject" style="width: 100%; height: 50vh;">
+            当颜色发生改变时请点击我
+        </div>
+        <div id="center">
+            测试数据
+        </div>
+        <div>
+            第一次：<span id="one">Empty</span> milliseconds<br>
+            第二次：<span id="two">Empty</span> milliseconds<br>
+            第三次：<span id="three">Empty</span> milliseconds<br>
+            第四次：<span id="four">Empty</span> milliseconds<br>
+            第五次：<span id="five">Empty</span> milliseconds<br>
+            第六次：<span id="six">Empty</span> milliseconds<br>
+            第七次：<span id="seven">Empty</span> milliseconds<br>
+            
+            综合结果：<span id="comprehensive">Empty</span>
+        </div>
+        <script>
+            list = [null, "one", "two", "three", "four", "five", "six", "seven"];
+            speed = {};
+            clicks = 0;
+            gt = () => {
+                document.getElementById("subject").style.backgroundColor = "gray";
+                clicks++;
+                if (clicks > list.length - 1) {
+                    return false;
+                };
+                //speed[list[clicks]] = Math.random()/1.0e60;
+                speed[list[clicks]] = getTimestamp() - time[list[clicks]];
+                document.getElementById(list[clicks]).innerHTML = speed[list[clicks]].toFixed(10);
+                if (clicks == Object.keys(time).length) {
+                    finish(speed);
+                };
+            };
+            function t() {
+                for (var k = 0; k < Object.keys(time).length; k++) {
+                    if (Math.abs(time[Object.keys(time)[k]] - getTimestamp()) <= 2) {
+                        document.getElementById("subject").style.backgroundColor = `rgb(${parseInt(Math.random() * 256)}, ${parseInt(Math.random() * 256)}, ${parseInt(Math.random() * 256)})`;
+                        //gt();
+                    };
+                };
+            };
+            handle = 0;
+            function finish(speed) {
+                clearInterval(handle)
+                temp = [];
+                for (var k = 0; k < Object.keys(speed).length; k++) {
+                    temp[k] = Math.abs(speed[Object.keys(speed)[k]]);
+                };
+                speed = temp;
+                document.getElementById("comprehensive").innerHTML = `<br>最大间隔：${speed.getExtreme("max").toFixed(10)} milliseconds<br>最小间隔：${speed.getExtreme("min").toFixed(10)} milliseconds<br>平均间隔：${speed.average().toFixed(10)} milliseconds`
+            };
+            document.getElementById("start").addEventListener("click", () => {
+                basics = getTimestamp();
+                s = 10;
+                time = {
+                    one: basics += Math.random() * s * 1000,
+                    two: basics += Math.random() * s * 1000,
+                    three: basics += Math.random() * s * 1000,
+                    four: basics += Math.random() * s * 1000,
+                    five: basics += Math.random() * s * 1000,
+                    six: basics += Math.random() * s * 1000,
+                    seven: basics += Math.random() * s * 1000,
+                };
+                for (var i = 0; i < list.length; i++) {
+                    if (i <= 4 && time[list[i]] - time[list[i + 1]] < 2000) {
+                        console.log(time[list[i]] - time[list[i + 1]])
+                        time[list[i + 1]] += 2000;
+                        console.log(time[list[i]] - time[list[i + 1]])
+                        
+                    };
+                };
+                console.log(time)
+                handle = setInterval(t, 1);
+                document.getElementById("subject").addEventListener("click", gt);
+            });
+            
+        </script>
+    </div>
+</body>
+</html>
